@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adega Corujão | Protocolo JARVIS Elite v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* CSS ORIGINAL */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;900&display=swap');
+
+        :root { --gold: #d4af37; --bg-black: #050505; }
+        body { background-color: var(--bg-black); color: #fff; font-family: 'Inter', sans-serif; transition: background 0.5s ease; }
+        .font-luxury { font-family: 'Cinzel', serif; }
+        .gold-gradient { background: linear-gradient(to right, #d4af37, #f9e29c, #b8860b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .btn-main-tab { color: #52525b; padding-bottom: 4px; text-transform: uppercase; font-size: 10px; font-weight: 900; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .btn-main-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+        .btn-main-tab-danger { color: #450a0a; padding-bottom: 4px; text-transform: uppercase; font-size: 10px; font-weight: 900; transition: 0.3s; }
+        .btn-main-tab-danger.active { color: #ef4444; }
+
+        .pay-btn { padding: 14px; border-radius: 12px; font-size: 9px; font-weight: 900; text-transform: uppercase; background: #0a0a0a; border: 1px solid #18181b; color: #3f3f46; transition: 0.4s; }
+        #pay-Pix.active { border-color: #2dd4bf; color: #2dd4bf; background: rgba(45, 212, 191, 0.05); }
+        #pay-Dinheiro.active { border-color: #4ade80; color: #4ade80; background: rgba(74, 222, 128, 0.05); }
+        #pay-Cartão.active { border-color: #60a5fa; color: #60a5fa; background: rgba(96, 165, 250, 0.05); }
+        #pay-Fiado.active { border-color: #f87171; color: #f87171; background: rgba(248, 113, 113, 0.05); }
+        #card-Crédito.active, #card-Débito.active { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.1); }
+
+        .active-type { border-color: var(--gold) !important; color: var(--gold) !important; background: rgba(212,175,55,0.05); }
+
+        .premium-card { background: #111; border: 1px solid #222; border-radius: 2rem; padding: 20px; cursor: pointer; transition: 0.4s; position: relative; }
+        .img-container { height: 160px; display: flex; align-items: center; justify-content: center; background: radial-gradient(#222, #050505); border-radius: 1.5rem; margin-bottom: 15px; overflow: hidden; }
+        .img-container img { max-height: 80%; object-fit: contain; }
+
+        .btn-finish-sale { width: 100%; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: black; font-weight: 900; padding: 18px; border-radius: 18px; text-transform: uppercase; transition: 0.4s; }
+        .search-input { background: #111; border: 1px solid #222; border-radius: 15px; padding: 15px 20px; color: white; width: 100%; outline: none; }
+        .tab-btn { padding: 10px 20px; border-radius: 12px; font-size: 10px; font-weight: 900; background: #111; border: 1px solid #222; color: #444; transition: 0.2s; white-space: nowrap; }
+        .tab-btn.active { border-color: var(--gold); color: var(--gold); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        .btn-manage { font-size: 10px; font-weight: 900; padding: 10px 20px; border-radius: 12px; border: 1px solid #333; text-transform: uppercase; }
+        .btn-new-item { background: white; color: black; font-size: 10px; font-weight: 900; padding: 10px 20px; border-radius: 12px; text-transform: uppercase; }
+
+        /* IN-HTML STYLES */
+        #splash-screen { background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); perspective: 1000px; }
+        .reactor-glow { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%); filter: blur(60px); animation: pulseGlow 4s infinite ease-in-out; }
+        @keyframes pulseGlow { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.2); opacity: 0.6; } }
+        .glitch-text { color: #d4af37; text-shadow: 0 0 30px rgba(212, 175, 55, 0.8), 0 0 60px rgba(212, 175, 55, 0.4); letter-spacing: 0.5rem; font-weight: 900; }
+        .progress-container { width: 300px; height: 1px; background: rgba(212, 175, 55, 0.1); position: relative; overflow: hidden; }
+        .system-bar { width: 0%; height: 100%; background: #d4af37; box-shadow: 0 0 15px #d4af37; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        .uau-exit { transform: scale(2) rotateX(20deg); filter: brightness(5) blur(100px); opacity: 0; transition: all 2s cubic-bezier(0.8, 0, 0.2, 1); }
+        .hidden-init { opacity: 0; filter: blur(30px); transform: scale(0.95) translateY(30px); }
+        .visible-init { opacity: 1; filter: blur(0); transform: scale(1) translateY(0); transition: all 2.5s cubic-bezier(0.075, 0.82, 0.165, 1); }
+        .char { display: inline-block; opacity: 0; transform: translateZ(-100px); animation: charIn 1.2s cubic-bezier(0.5, 0, 0.5, 1) forwards; }
+        @keyframes charIn { to { opacity: 1; transform: translateZ(0); } }
+        .critical-stock { border: 1px solid #ef4444 !important; animation: pulseAlert 2s infinite; }
+        .expiring-soon { border: 2px solid #f97316 !important; background: rgba(249, 115, 22, 0.05) !important; }
+        @keyframes pulseAlert { 0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); } 50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); } }
+        .edit-mode-active .premium-card, .edit-mode-active .sale-card, .edit-mode-active .dev-card { border: 1px dashed #d4af37 !important; cursor: cell; }
+        #loading-overlay { display: none; background: rgba(0,0,0,0.95); z-index: 1000; position: fixed; inset: 0; }
+        .loader-circle { width: 40px; height: 40px; border: 3px solid #111; border-top-color: #d4af37; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* IA CHAT STYLES */
+        .ia-bubble { padding: 12px 16px; border-radius: 1.2rem; margin-bottom: 8px; font-size: 11px; line-height: 1.5; max-width: 80%; position: relative; }
+        .ia-bubble.jarvis { background: #111; border: 1px solid #222; border-left: 3px solid #d4af37; color: #eee; align-self: flex-start; }
+        .ia-bubble.user { background: #d4af37; color: #000; font-weight: 700; align-self: flex-end; margin-left: auto; border-radius: 1.2rem 1.2rem 0 1.2rem; }
+        
+        .day-group-box { background: #080808; border: 1px solid #111; border-radius: 2rem; padding: 25px; margin-bottom: 30px; }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1a1a1a; padding-bottom: 15px; }
+        .day-total-label { background: #d4af37; color: black; padding: 4px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; }
+        .uau-receipt { background: #0a0a0a; border: 1px solid #d4af37; box-shadow: 0 0 50px rgba(212, 175, 55, 0.2); animation: receiptIn 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes receiptIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        body.black-ops { background: #000 !important; filter: contrast(1.1) brightness(0.8); }
+        .delivery-badge { font-size: 7px; padding: 2px 6px; border-radius: 4px; background: #d4af37; color: black; font-weight: 900; }
+        .goal-bar-bg { height: 4px; background: #111; border-radius: 2px; overflow: hidden; margin-top: 8px; }
+        .goal-bar-fill { height: 100%; background: #d4af37; width: 0%; transition: width 1s ease; }
+    </style>
+</head>
+<body class="flex flex-col lg:flex-row min-h-screen bg-[#050505] text-white overflow-x-hidden">
+
+    <div id="loading-overlay" class="flex flex-col items-center justify-center">
+        <div class="loader-circle mb-4"></div>
+        <p class="text-[10px] font-black tracking-widest text-zinc-500 uppercase">Processando...</p>
+    </div>
+
+    <div id="splash-screen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden">
+        <div class="reactor-glow"></div>
+        <div id="splash-brand" class="relative z-10 flex flex-col items-center">
+            <div id="brand-logo" class="mb-12 opacity-0 transform translate-y-10 transition-all duration-[2500ms]">
+                <img src="https://i.ibb.co/N2zRYC30/Chat-GPT-Image-16-de-jan-de-2026-16-05-15-removebg-preview.png" alt="Coruja" class="w-[320px] md:w-[450px]">
+            </div>
+            <div id="text-container" class="h-28 flex items-center justify-center">
+                <h1 id="splash-title" class="text-5xl md:text-8xl font-luxury glitch-text uppercase"></h1>
+            </div>
+            <div class="progress-container mt-16">
+                <div id="boot-progress" class="system-bar"></div>
+            </div>
+            <div class="mt-6 flex flex-col items-center">
+                <p id="splash-status" class="text-[8px] font-black uppercase tracking-[0.8em] text-zinc-600 animate-pulse"></p>
+            </div>
+        </div>
+    </div>
+
+    <main id="app-content" class="flex-1 p-6 lg:p-12 hidden-init">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+            <div>
+                <h1 class="text-6xl font-luxury gold-gradient tracking-tighter">Adega Corujão</h1>
+                <div class="flex flex-wrap gap-5 mt-8">
+                    <button onclick="ui.mainTab('estoque')" id="btn-estoque" class="btn-main-tab active">Inventário</button>
+                    <button onclick="ui.mainTab('pedidos')" id="btn-pedidos" class="btn-main-tab">Vendas</button>
+                    <button onclick="ui.mainTab('historico')" id="btn-historico" class="btn-main-tab">Caixa</button>
+                    <button onclick="ui.mainTab('devendo')" id="btn-devendo" class="btn-main-tab-danger">Devedores</button>
+                    <button onclick="ui.mainTab('ia')" id="btn-ia" class="btn-main-tab text-[#d4af37] border-l border-zinc-800 pl-4">Gerente Interno</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-end gap-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="ui.toggleBlackOps()" class="btn-manage border-zinc-800">Black Ops</button>
+                    <button id="btn-toggle-delete" onclick="inventory.toggleDeleteMode()" class="btn-manage bg-red-950/20 border-red-900 text-red-500">CONTROLAR (OFF)</button>
+                    <button onclick="ui.openProductModal()" class="btn-new-item">Novo Item (F4)</button>
+                </div>
+                <div id="daily-goal-widget" class="w-full max-w-[200px] text-right">
+                    <p class="text-[8px] font-black text-zinc-500 uppercase">Meta Diária: <span id="goal-percent">0%</span></p>
+                    <div class="goal-bar-bg"><div id="goal-bar-fill" class="goal-bar-fill"></div></div>
+                </div>
+            </div>
+        </header>
+
+        <div id="section-inventory">
+            <div class="mb-10"><input type="text" id="search-bar" oninput="inventory.search(this.value)" placeholder="BUSCAR PRODUTO..." class="search-input"></div>
+            <div id="category-tabs" class="flex gap-4 overflow-x-auto pb-6 no-scrollbar mb-10">
+                <button onclick="inventory.filter('TUDO')" class="tab-btn active">TUDO</button>
+                <button onclick="inventory.filter('refrigerantes')" class="tab-btn">REFRIGERANTES</button>
+                <button onclick="inventory.filter('Cervejas')" class="tab-btn">CERVEJAS</button>
+                <button onclick="inventory.filter('gin')" class="tab-btn">GIN</button>
+                <button onclick="inventory.filter('whisky')" class="tab-btn">WHISKY</button>
+                <button onclick="inventory.filter('vodkas')" class="tab-btn">VODKAS</button>
+                <button onclick="inventory.filter('Long neck')" class="tab-btn">LONG NECK</button>
+                <button onclick="inventory.filter('cerveja lata')" class="tab-btn">LATA</button>
+                <button onclick="inventory.filter('kit')" class="tab-btn">KITS</button>
+            </div>
+            <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-10"></div>
+        </div>
+
+        <div id="section-pedidos" class="hidden">
+            <div id="pedidos-grouped-container" class="max-w-4xl space-y-8"></div>
+        </div>
+
+        <div id="section-historico" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
+                    <p class="text-[9px] text-zinc-500 font-black uppercase mb-2">Faturamento</p>
+                    <h2 id="dash-faturamento" class="text-2xl font-black text-white">R$ 0,00</h2>
+                </div>
+                <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
+                    <p class="text-[9px] text-zinc-500 font-black uppercase mb-2">Lucro Bruto</p>
+                    <h2 id="dash-lucro" class="text-2xl font-black text-green-500">R$ 0,00</h2>
+                </div>
+                <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
+                    <p class="text-[9px] text-red-500 font-black uppercase mb-2">Perdas/Avarias</p>
+                    <h2 id="dash-perdas" class="text-2xl font-black text-red-600">R$ 0,00</h2>
+                </div>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="financeiro.abrirModalDespesa()" class="bg-red-950/20 border border-red-900/40 p-3 rounded-[1rem] text-red-500 text-[8px] font-black uppercase">Sangria</button>
+                    <button onclick="financeiro.downloadSnapshot()" class="bg-zinc-900 border border-zinc-800 p-3 rounded-[1rem] text-zinc-400 text-[8px] font-black uppercase">Backup</button>
+                </div>
+            </div>
+            <div id="gavetas-grouped-container" class="max-w-4xl space-y-8"></div>
+        </div>
+
+        <div id="section-devendo" class="hidden">
+            <div class="max-w-xl bg-zinc-950 border border-zinc-900 rounded-[3rem] p-10 mb-12">
+                <h3 class="text-xl font-luxury text-red-600 mb-6 uppercase">Novo Devedor</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="dev-nome" placeholder="NOME DO CLIENTE" class="col-span-2 bg-black border border-zinc-900 p-4 rounded-2xl outline-none">
+                    <input type="number" id="dev-valor" placeholder="VALOR R$" class="bg-black border border-zinc-900 p-4 rounded-2xl outline-none">
+                    <button onclick="devedoresSystem.add()" class="bg-red-600 text-white font-black rounded-2xl text-[10px] uppercase">Registrar Dívida</button>
+                </div>
+            </div>
+            <div id="devedores-container" class="max-w-4xl space-y-4"></div>
+        </div>
+
+        <div id="section-ia" class="hidden">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div class="space-y-8">
+                    <div class="bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
+                            <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Lista de Reposição (IA)</h4>
+                        </div>
+                        <div id="ia-shopping-list" class="space-y-3 text-[10px] text-zinc-100 font-bold uppercase"></div>
+                    </div>
+                    <div class="bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900">
+                        <h4 class="text-[10px] font-black uppercase text-[#d4af37] mb-6 tracking-widest">Mais Vendidos</h4>
+                        <div id="ia-top-ranking" class="space-y-4"></div>
+                    </div>
+                </div>
+                <div class="xl:col-span-2 space-y-8">
+                    <div class="bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900">
+                        <div class="flex justify-between items-center mb-8">
+                            <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Intensidade de Movimento (24h)</h4>
+                            <span class="text-[8px] text-zinc-600 font-bold uppercase">Baseado em Vendas Reais</span>
+                        </div>
+                        <div id="ia-hour-chart" class="flex items-end gap-1.5 h-32 px-2"></div>
+                        <div class="flex justify-between mt-4 px-2 text-[8px] text-zinc-700 font-black">
+                            <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col h-[500px] bg-zinc-950 rounded-[2.5rem] border border-zinc-900 overflow-hidden">
+                        <div class="p-6 border-b border-zinc-900 bg-black/40 flex justify-between items-center">
+                            <h3 class="text-xs font-black gold-gradient uppercase tracking-widest">Terminal de Comando JARVIS</h3>
+                            <span class="text-[8px] bg-zinc-900 px-3 py-1 rounded-full text-zinc-500 font-black">ONLINE</span>
+                        </div>
+                        <div id="ia-chat-box" class="flex-1 overflow-y-auto p-8 flex flex-col no-scrollbar space-y-4">
+                            <div class="ia-bubble jarvis">Senhor, estou analisando os dados da Adega. Pergunte-me sobre metas, perdas ou estoque.</div>
+                        </div>
+                        <div class="p-6 bg-black/40 flex gap-3 border-t border-zinc-900">
+                            <input type="text" id="ia-input" placeholder="Comando de voz ou texto..." class="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 text-xs outline-none focus:border-[#d4af37] transition-all">
+                            <button onclick="jarvisIA.perguntar()" class="bg-[#d4af37] text-black font-black px-8 rounded-2xl text-[10px] uppercase hover:scale-105 active:scale-95 transition-all">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <aside id="app-aside" class="w-full lg:w-[480px] bg-black border-l border-zinc-900 flex flex-col p-12 sticky top-0 h-screen hidden-init">
+        <h2 class="text-3xl font-luxury mb-10">Checkout</h2>
+        <div id="cart-items" class="flex-1 overflow-y-auto space-y-6 no-scrollbar"></div>
+        <div class="mt-8 border-t border-zinc-900 pt-8">
+            <div class="flex gap-4 mb-6">
+                <button onclick="logistica.setOrderType('Balcão')" class="flex-1 py-3 rounded-xl border border-zinc-900 text-[9px] font-black uppercase active-type" id="type-Balcão">Balcão</button>
+                <button onclick="logistica.setOrderType('Entrega')" class="flex-1 py-3 rounded-xl border border-zinc-900 text-[9px] font-black uppercase" id="type-Entrega">Entrega</button>
+            </div>
+            <div id="delivery-details" class="hidden mb-6 p-4 bg-zinc-950 rounded-2xl border border-zinc-900">
+                <input type="number" id="delivery-fee" oninput="vendaSystem.renderCart()" placeholder="TAXA DE ENTREGA R$" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-[10px] outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="vendaSystem.setPay('Pix')" class="pay-btn active" id="pay-Pix">PIX</button>
+                <button onclick="vendaSystem.setPay('Dinheiro')" class="pay-btn" id="pay-Dinheiro">DINHEIRO</button>
+                <button onclick="vendaSystem.setPay('Cartão')" class="pay-btn" id="pay-Cartão">CARTÃO</button>
+                <button onclick="vendaSystem.setPay('Fiado')" class="pay-btn" id="pay-Fiado">FIADO</button>
+            </div>
+            <div id="money-input-area" class="hidden mb-6 p-4 bg-zinc-950 rounded-2xl border border-zinc-900">
+                <input type="number" id="money-received" oninput="vendaSystem.calcTroco()" placeholder="VALOR RECEBIDO R$" class="w-full bg-black border border-zinc-900 p-4 rounded-xl text-xs mb-3">
+                <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-500 uppercase">Troco:</span><span id="money-change" class="text-xl font-black text-green-500">R$ 0,00</span></div>
+            </div>
+            <div id="card-options" class="hidden grid grid-cols-2 gap-3 mb-6">
+                <button onclick="vendaSystem.setCardType('Crédito')" class="pay-btn text-[8px]" id="card-Crédito">CRÉDITO (5%)</button>
+                <button onclick="vendaSystem.setCardType('Débito')" class="pay-btn text-[8px]" id="card-Débito">DÉBITO (3%)</button>
+            </div>
+            <input type="text" id="venda-obs" placeholder="CLIENTE / OBS" class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 text-xs outline-none mb-6">
+            <div class="flex justify-between items-center mb-8">
+                <span class="text-zinc-500 font-bold text-[10px] uppercase">Total Geral</span>
+                <span id="cart-total" class="text-5xl font-black text-white">R$ 0,00</span>
+            </div>
+            <button onclick="vendaSystem.finalizar()" class="btn-finish-sale">Finalizar Venda (Espaço)</button>
+        </div>
+    </aside>
+
+    <div id="receipt-modal" class="fixed inset-0 hidden z-[300] bg-black/95 flex items-center justify-center p-6">
+        <div class="uau-receipt w-full max-w-md rounded-[3rem] p-10 text-center">
+            <div id="printable-area">
+                <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase">Recibo Corujão</h3>
+                <div id="rec-list" class="space-y-4 mb-8 text-left border-y border-zinc-900 py-8"></div>
+                <div class="flex justify-between items-end mb-8">
+                    <div class="text-left">
+                        <p id="rec-metodo" class="text-xs text-white font-bold uppercase"></p>
+                        <p id="rec-tipo" class="text-[8px] text-zinc-500 uppercase"></p>
+                    </div>
+                    <div id="rec-total" class="text-4xl font-black text-white"></div>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="ui.printReceipt()" class="flex-1 bg-white text-black font-black py-3 rounded-xl uppercase text-[10px]">Imprimir</button>
+                <button onclick="ui.closeReceipt()" class="flex-1 text-zinc-600 font-black uppercase text-[10px]">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 hidden z-[400] bg-black/98 flex items-center justify-center p-6">
+        <div class="bg-zinc-950 border border-zinc-900 w-full max-w-xl rounded-[3rem] p-10">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-luxury gold-gradient uppercase">Gerenciar Item</h3>
+                <div class="flex gap-4">
+                    <button onclick="inventory.registrarPerda()" class="text-orange-500 font-black text-[8px] uppercase">Registrar Avaria</button>
+                    <button id="btn-delete-prod" onclick="inventory.deleteProduct()" class="hidden text-red-600 font-black text-[8px] uppercase">Excluir</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-5">
+                <input type="hidden" id="edit-id">
+                <input type="text" id="p-nome" placeholder="NOME" class="col-span-2 bg-black border border-zinc-900 p-5 rounded-2xl outline-none uppercase">
+                <select id="p-cat" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                    <option value="refrigerantes">Refrigerantes</option>
+                    <option value="Cervejas">Cervejas</option>
+                    <option value="gin">Gin</option>
+                    <option value="whisky">Whisky</option>
+                    <option value="vodkas">Vodkas</option>
+                    <option value="Long neck">Long Neck</option>
+                    <option value="cerveja lata">Cerveja Lata</option>
+                    <option value="kit">Kits</option>
+                </select>
+                <input type="number" id="p-qtd" placeholder="ESTOQUE" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <input type="number" id="p-custo" placeholder="CUSTO R$" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <input type="number" id="p-venda" placeholder="VENDA R$" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <div class="col-span-2"><p class="text-[8px] text-zinc-500 mb-2 uppercase">Validade</p><input type="date" id="p-validade" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none text-white"></div>
+                <input type="text" id="p-img" placeholder="IMAGEM URL" class="col-span-2 bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+            </div>
+            <div class="flex gap-6 mt-10">
+                <button onclick="ui.closeProductModal()" class="flex-1 text-zinc-500 font-black uppercase text-xs">Cancelar</button>
+                <button onclick="inventory.saveProduct()" class="flex-2 bg-white text-black font-black p-5 rounded-2xl uppercase text-xs">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-venda-modal" class="fixed inset-0 hidden z-[500] bg-black/95 flex items-center justify-center p-6">
+        <div class="bg-zinc-950 border border-zinc-900 w-full max-w-lg rounded-[3rem] p-10">
+            <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase text-center">Ajustar Registro</h3>
+            <input type="hidden" id="edit-venda-id">
+            <div class="space-y-4">
+                <input type="text" id="edit-venda-obs" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none uppercase text-xs">
+                <input type="number" id="edit-venda-total" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none text-xs">
+            </div>
+            <div class="flex gap-4 mt-10">
+                <button onclick="vendaSystem.deletarVenda(document.getElementById('edit-venda-id').value)" class="flex-1 text-red-600 font-black uppercase text-[10px]">Excluir</button>
+                <button onclick="vendaSystem.salvarEdicaoVenda()" class="flex-2 bg-white text-black font-black p-4 rounded-xl uppercase text-[10px]">Salvar</button>
+                <button onclick="ui.closeEditVenda()" class="flex-1 text-zinc-500 font-black uppercase text-[10px]">Voltar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* JS ORIGINAL */
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_AFJL8gwdcidtisa8hoN7l6imJynCGFc",
+            authDomain: "adega-corujao.firebaseapp.com",
+            projectId: "adega-corujao",
+            storageBucket: "adega-corujao.firebasestorage.app",
+            messagingSenderId: "618915929534",
+            appId: "1:618915929534:web:ced1d5a46a9cc89bf3edef"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentFilter = "TUDO", searchQuery = "", selectedPay = "Pix", cardType = "", orderType = "Balcão", editMode = false, cartTotalValue = 0;
+        const DIAL_GOAL = 1500; 
+
+        const jarvis = {
+            async typeText(text, elementId) {
+                const el = document.getElementById(elementId);
+                el.innerHTML = "";
+                const chars = text.split("");
+                for (let i = 0; i < chars.length; i++) {
+                    const span = document.createElement("span");
+                    span.innerText = chars[i] === " " ? "\u00A0" : chars[i];
+                    span.className = "char";
+                    span.style.animationDelay = `${i * 0.05}s`;
+                    el.appendChild(span);
+                }
+            }
+        };
+
+        window.addEventListener('load', async () => {
+            const splash = document.getElementById('splash-screen');
+            const brandLogo = document.getElementById('brand-logo');
+            const status = document.getElementById('splash-status');
+            const bar = document.getElementById('boot-progress');
+            
+            setTimeout(() => { brandLogo.style.opacity = "1"; brandLogo.style.transform = "translateY(0)"; status.innerText = "Sistemas Online..."; bar.style.width = "40%"; }, 1000);
+            setTimeout(() => { bar.style.width = "80%"; jarvis.typeText("ADEGA CORUJÃO", "splash-title"); }, 4000);
+            setTimeout(() => {
+                splash.classList.add('uau-exit');
+                setTimeout(() => {
+                    splash.style.visibility = 'hidden';
+                    document.getElementById('app-content').classList.replace('hidden-init', 'visible-init');
+                    document.getElementById('app-aside').classList.replace('hidden-init', 'visible-init');
+                    inventory.init(); vendaSystem.init(); devedoresSystem.init();
+                }, 1500);
+            }, 8000);
+        });
+
+        // EVENTOS DE TECLADO
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F4') { e.preventDefault(); ui.openProductModal(); }
+            if (e.key === 'Escape') { ui.closeProductModal(); ui.closeReceipt(); ui.closeEditVenda(); }
+            if (e.key === ' ' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') { 
+                e.preventDefault(); if(vendaSystem.carrinho.length > 0) vendaSystem.finalizar(); 
+            }
+        });
+
+        const inventory = {
+            db: [],
+            async init() {
+                db.collection("produtos").onSnapshot(snap => {
+                    this.db = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    this.render(); financeiro.renderDash(); jarvisIA.updateRanking(); jarvisIA.renderHourChart(); jarvisIA.generateShoppingList();
+                });
+            },
+            toggleDeleteMode() {
+                editMode = !editMode;
+                const btn = document.getElementById('btn-toggle-delete');
+                btn.innerText = editMode ? "CONTROLAR (ON)" : "CONTROLAR (OFF)";
+                btn.className = editMode ? "btn-manage bg-white text-black border-white" : "btn-manage bg-red-950/20 border-red-900 text-red-500";
+                document.body.classList.toggle('edit-mode-active', editMode);
+            },
+            filter(cat) { currentFilter = cat; this.render(); },
+            search(val) { searchQuery = val.toLowerCase(); this.render(); },
+            render() {
+                const grid = document.getElementById('inventory-grid');
+                const hoje = new Date();
+                const filtered = this.db.filter(i => (currentFilter === "TUDO" || i.cat === currentFilter) && i.nome.toLowerCase().includes(searchQuery));
+                grid.innerHTML = filtered.map(i => {
+                    let valClass = "";
+                    if(i.validade) {
+                        const diff = (new Date(i.validade) - hoje) / (1000 * 60 * 60 * 24);
+                        if(diff < 15) valClass = "expiring-soon";
+                    }
+                    return `
+                    <div class="premium-card ${i.qtd <= 3 ? 'critical-stock' : ''} ${valClass}" onclick="inventory.handleItemClick('${i.id}')">
+                        <div class="img-container"><img src="${i.imagem}"></div>
+                        <h4 class="font-bold truncate text-white uppercase text-xs">${i.nome}</h4>
+                        <div class="flex justify-between mt-4">
+                            <span class="text-xl font-black gold-gradient">R$ ${i.venda.toFixed(2)}</span>
+                            <span class="text-[9px] font-bold ${i.qtd <= 3 ? 'text-red-500' : 'text-zinc-600'}">${i.qtd} UN</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+            handleItemClick(id) { if(editMode) this.editItem(id); else vendaSystem.adicionar(id); },
+            editItem(id) {
+                const p = this.db.find(x => x.id === id);
+                document.getElementById('edit-id').value = p.id;
+                document.getElementById('p-nome').value = p.nome;
+                document.getElementById('p-cat').value = p.cat;
+                document.getElementById('p-qtd').value = p.qtd;
+                document.getElementById('p-custo').value = p.custo;
+                document.getElementById('p-venda').value = p.venda;
+                document.getElementById('p-validade').value = p.validade || "";
+                document.getElementById('p-img').value = p.imagem;
+                document.getElementById('btn-delete-prod').classList.remove('hidden');
+                ui.openProductModal();
+            },
+            async registrarPerda() {
+                const id = document.getElementById('edit-id').value;
+                const p = this.db.find(x => x.id === id);
+                const qtdPerda = prompt(`QUANTAS UNIDADES DE ${p.nome} FORAM PERDIDAS?`);
+                if(qtdPerda) {
+                    const custoTotalPerda = p.custo * parseInt(qtdPerda);
+                    await db.collection("produtos").doc(id).update({ qtd: firebase.firestore.FieldValue.increment(-parseInt(qtdPerda)) });
+                    await db.collection("vendas").add({ 
+                        total: 0, lucro: -custoTotalPerda, obs: `AVARIA: ${qtdPerda}x ${p.nome}`, 
+                        timestamp: Date.now(), dataSimples: new Date().toLocaleDateString('pt-BR'), 
+                        metodo: "Perda", tipo: "Saída", perda: true 
+                    });
+                    ui.closeProductModal();
+                }
+            },
+            async saveProduct() {
+                const id = document.getElementById('edit-id').value;
+                const data = {
+                    nome: document.getElementById('p-nome').value.toUpperCase(),
+                    cat: document.getElementById('p-cat').value,
+                    qtd: parseInt(document.getElementById('p-qtd').value) || 0,
+                    custo: parseFloat(document.getElementById('p-custo').value) || 0,
+                    venda: parseFloat(document.getElementById('p-venda').value) || 0,
+                    validade: document.getElementById('p-validade').value || "",
+                    imagem: document.getElementById('p-img').value || 'https://via.placeholder.com/400'
+                };
+                if(id) await db.collection("produtos").doc(id).update(data); else await db.collection("produtos").add(data);
+                ui.closeProductModal();
+            },
+            async deleteProduct() {
+                if(confirm("EXCLUIR?")) { await db.collection("produtos").doc(document.getElementById('edit-id').value).delete(); ui.closeProductModal(); }
+            }
+        };
+
+        const logistica = {
+            setOrderType(t) {
+                orderType = t;
+                document.getElementById('type-Balcão').classList.toggle('active-type', t === 'Balcão');
+                document.getElementById('type-Entrega').classList.toggle('active-type', t === 'Entrega');
+                document.getElementById('delivery-details').classList.toggle('hidden', t !== 'Entrega');
+                vendaSystem.renderCart();
+            }
+        };
+
+        const vendaSystem = {
+            carrinho: [], history: [],
+            async init() {
+                db.collection("vendas").orderBy("timestamp", "desc").onSnapshot(snap => {
+                    this.history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    ui.renderHistory(); financeiro.renderDash(); jarvisIA.renderHourChart(); jarvisIA.updateRanking();
+                });
+            },
+            adicionar(id) {
+                const p = inventory.db.find(x => x.id === id);
+                if(p.qtd <= 0) return;
+                const item = this.carrinho.find(i => i.id === id);
+                if(item) item.qV++; else this.carrinho.push({ ...p, qV: 1 });
+                this.renderCart();
+            },
+            remover(id) {
+                const item = this.carrinho.find(i => i.id === id);
+                if(item.qV > 1) item.qV--; else this.carrinho = this.carrinho.filter(i => i.id !== id);
+                this.renderCart();
+            },
+            renderCart() {
+                let subtotal = this.carrinho.reduce((a, b) => a + (b.venda * b.qV), 0);
+                let taxaEntrega = (orderType === 'Entrega') ? (parseFloat(document.getElementById('delivery-fee').value) || 0) : 0;
+                let taxaCartao = (selectedPay === 'Cartão') ? (cardType === 'Débito' ? subtotal * 0.03 : subtotal * 0.05) : 0;
+                cartTotalValue = subtotal + taxaEntrega + taxaCartao;
+                document.getElementById('cart-items').innerHTML = this.carrinho.map(i => `
+                    <div class="flex items-center gap-5 bg-zinc-950 p-5 rounded-2xl border border-zinc-900">
+                        <div class="flex-1 text-[10px] uppercase font-black">${i.nome}</div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="vendaSystem.remover('${i.id}')" class="w-8 h-8 bg-zinc-900 rounded-lg">-</button>
+                            <span>${i.qV}</span>
+                            <button onclick="vendaSystem.adicionar('${i.id}')" class="w-8 h-8 bg-zinc-900 rounded-lg">+</button>
+                        </div>
+                    </div>`).join('');
+                document.getElementById('cart-total').innerText = `R$ ${cartTotalValue.toFixed(2)}`;
+                this.calcTroco();
+            },
+            async finalizar() {
+                if(this.carrinho.length === 0) return;
+                document.getElementById('loading-overlay').style.display = 'flex';
+                const obsFinal = (document.getElementById('venda-obs').value || "BALCÃO").toUpperCase();
+                const taxa = orderType === 'Entrega' ? (parseFloat(document.getElementById('delivery-fee').value) || 0) : 0;
+                const lucroV = this.carrinho.reduce((a,b) => a + ((b.venda - b.custo) * b.qV), 0);
+                const data = {
+                    timestamp: Date.now(),
+                    dataSimples: new Date().toLocaleDateString('pt-BR'),
+                    metodo: selectedPay === 'Cartão' ? `CARTÃO ${cardType}` : selectedPay,
+                    tipo: orderType,
+                    taxaEntrega: taxa,
+                    total: cartTotalValue,
+                    lucro: lucroV,
+                    itens: this.carrinho.map(i => ({ nome: i.nome, qV: i.qV, preco: i.venda, id: i.id })),
+                    obs: obsFinal,
+                    hora: new Date().toLocaleTimeString(),
+                    horaPura: new Date().getHours()
+                };
+                if (selectedPay === 'Fiado') await devedoresSystem.add(obsFinal, cartTotalValue, data.itens);
+                const batch = db.batch();
+                this.carrinho.forEach(i => batch.update(db.collection("produtos").doc(i.id), { qtd: firebase.firestore.FieldValue.increment(-i.qV) }));
+                await db.collection("vendas").add(data);
+                await batch.commit();
+                document.getElementById('loading-overlay').style.display = 'none';
+                ui.showReceipt(data);
+                this.carrinho = []; document.getElementById('delivery-fee').value = ""; document.getElementById('venda-obs').value = ""; this.renderCart();
+            },
+            setPay(m) { 
+                selectedPay = m;
+                document.querySelectorAll('.pay-btn').forEach(b => b.classList.toggle('active', b.id === `pay-${m}`));
+                document.getElementById('card-options').classList.toggle('hidden', m !== 'Cartão');
+                document.getElementById('money-input-area').classList.toggle('hidden', m !== 'Dinheiro');
+                this.renderCart();
+            },
+            setCardType(t) { cardType = t; this.renderCart(); },
+            calcTroco() {
+                const rec = parseFloat(document.getElementById('money-received').value) || 0;
+                document.getElementById('money-change').innerText = `R$ ${Math.max(0, rec - cartTotalValue).toFixed(2)}`;
+            },
+            handleVendaClick(id) {
+                if(editMode) {
+                    const v = this.history.find(x => x.id === id);
+                    document.getElementById('edit-venda-id').value = v.id;
+                    document.getElementById('edit-venda-obs').value = v.obs;
+                    document.getElementById('edit-venda-total').value = v.total;
+                    document.getElementById('edit-venda-modal').classList.remove('hidden');
+                }
+            },
+            async salvarEdicaoVenda() {
+                const id = document.getElementById('edit-venda-id').value;
+                await db.collection("vendas").doc(id).update({
+                    obs: document.getElementById('edit-venda-obs').value.toUpperCase(),
+                    total: parseFloat(document.getElementById('edit-venda-total').value)
+                });
+                ui.closeEditVenda();
+            },
+            async deletarVenda(id) {
+                if(confirm("EXCLUIR?")) { await db.collection("vendas").doc(id).delete(); ui.closeEditVenda(); }
+            }
+        };
+
+        const devedoresSystem = {
+            registros: [],
+            async init() { db.collection("devedores").onSnapshot(snap => { this.registros = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); this.render(); }); },
+            async add(nome, valor, itens = []) {
+                const n = nome || document.getElementById('dev-nome').value;
+                const v = valor || document.getElementById('dev-valor').value;
+                if(n && v) await db.collection("devedores").add({ nome: n.toUpperCase(), valor: parseFloat(v), itens: itens, timestamp: Date.now(), data: new Date().toLocaleDateString('pt-BR') });
+            },
+            render() {
+                document.getElementById('devedores-container').innerHTML = this.registros.map(r => `
+                    <div class="dev-card bg-zinc-950 p-6 rounded-2xl flex justify-between border border-zinc-900 items-center" onclick="devedoresSystem.handleDevClick('${r.id}')">
+                        <div><p class="font-black text-xs uppercase">${r.nome}</p><p class="text-[8px] text-zinc-600">${r.data}</p></div>
+                        <span class="text-red-600 font-black">R$ ${r.valor.toFixed(2)}</span>
+                    </div>`).join('');
+            },
+            async handleDevClick(id) {
+                const r = this.registros.find(x => x.id === id);
+                if(editMode && confirm("REMOVER?")) await db.collection("devedores").doc(id).delete();
+                else {
+                    const p = prompt("ABATER VALOR:");
+                    if(p) {
+                        const res = r.valor - parseFloat(p);
+                        if(res <= 0) await db.collection("devedores").doc(id).delete();
+                        else await db.collection("devedores").doc(id).update({ valor: res });
+                    }
+                }
+            }
+        };
+
+        const financeiro = {
+            renderDash() {
+                const fatTotal = vendaSystem.history.reduce((a,b)=>a+(b.total||0), 0);
+                const lucTotal = vendaSystem.history.reduce((a,b)=>a+(b.lucro||0), 0);
+                const perdas = vendaSystem.history.filter(v => v.perda).reduce((a,b)=>a+Math.abs(b.lucro), 0);
+                document.getElementById('dash-faturamento').innerText = `R$ ${fatTotal.toFixed(2)}`;
+                document.getElementById('dash-lucro').innerText = `R$ ${lucTotal.toFixed(2)}`;
+                document.getElementById('dash-perdas').innerText = `R$ ${perdas.toFixed(2)}`;
+
+                const hoje = new Date().toLocaleDateString('pt-BR');
+                const fatHoje = vendaSystem.history.filter(v => v.dataSimples === hoje).reduce((a,b)=>a+(b.total||0),0);
+                const perc = Math.min(100, (fatHoje / DIAL_GOAL) * 100);
+                document.getElementById('goal-percent').innerText = `${perc.toFixed(0)}%`;
+                document.getElementById('goal-bar-fill').style.width = `${perc}%`;
+            },
+            downloadSnapshot() {
+                const d = { produtos: inventory.db, vendas: vendaSystem.history, devedores: devedoresSystem.registros };
+                const b = new Blob([JSON.stringify(d)], { type: 'application/json' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup.json`; a.click();
+            },
+            async abrirModalDespesa() {
+                const v = prompt("VALOR SANGRIA:"); const m = prompt("MOTIVO:");
+                if(v && m) await db.collection("vendas").add({ total: -parseFloat(v), lucro: -parseFloat(v), obs: `SANGRIA: ${m.toUpperCase()}`, timestamp: Date.now(), dataSimples: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString(), metodo: "Sangria", tipo: "Saída" });
+            }
+        };
+
+        const jarvisIA = {
+            async perguntar() {
+                const input = document.getElementById('ia-input');
+                const msg = input.value.toLowerCase().trim(); 
+                if(!msg) return;
+                
+                const userB = document.createElement('div'); 
+                userB.className = 'ia-bubble user'; 
+                userB.innerText = input.value;
+                document.getElementById('ia-chat-box').appendChild(userB);
+                input.value = "";
+
+                let res = "";
+                const produtoEncontrado = inventory.db.find(p => msg.includes(p.nome.toLowerCase()));
+                
+                if (msg.includes("quanto") && msg.includes("estoque") && produtoEncontrado) {
+                    res = `Senhor, temos ${produtoEncontrado.qtd} unidades de ${produtoEncontrado.nome}.`;
+                } 
+                else if ((msg.includes("preço") || msg.includes("quanto custa")) && produtoEncontrado) {
+                    res = `O ${produtoEncontrado.nome} custa R$ ${produtoEncontrado.venda.toFixed(2)}.`;
+                }
+                else if (msg.includes("mais caro")) {
+                    const caro = [...inventory.db].sort((a,b) => b.venda - a.venda)[0];
+                    res = `O item mais caro é ${caro.nome} (R$ ${caro.venda.toFixed(2)}).`;
+                }
+                else if (msg.includes("vendas") || msg.includes("vendi")) {
+                    const hoje = new Date().toLocaleDateString('pt-BR');
+                    const vdsHoje = vendaSystem.history.filter(v => v.dataSimples === hoje);
+                    const totalH = vdsHoje.reduce((a,b) => a + (b.total || 0), 0);
+                    res = `Hoje faturamos R$ ${totalH.toFixed(2)} em ${vdsHoje.length} vendas.`;
+                }
+                else if (msg.includes("lucro")) {
+                    const luc = document.getElementById('dash-lucro').innerText;
+                    res = `O lucro total registrado é de ${luc}.`;
+                }
+                else if (msg.includes("quem deve") || msg.includes("devedor")) {
+                    const totalD = devedoresSystem.registros.reduce((a,b) => a + b.valor, 0);
+                    res = `Temos R$ ${totalD.toFixed(2)} pendentes com devedores.`;
+                }
+                else if (msg.includes("repor") || msg.includes("acabando")) {
+                    const baixos = inventory.db.filter(p => p.qtd <= 3).map(p => p.nome).join(", ");
+                    res = baixos ? `Precisa repor: ${baixos}.` : "Estoque estável, Senhor.";
+                }
+                else {
+                    res = "Não entendi o comando. Pergunte sobre estoque, vendas de hoje ou lucro.";
+                }
+
+                setTimeout(() => {
+                    const jarvisB = document.createElement('div'); 
+                    jarvisB.className = 'ia-bubble jarvis'; 
+                    jarvisB.innerText = res;
+                    document.getElementById('ia-chat-box').appendChild(jarvisB);
+                    document.getElementById('ia-chat-box').scrollTop = document.getElementById('ia-chat-box').scrollHeight;
+                }, 500);
+            },
+            updateRanking() {
+                const counts = {};
+                vendaSystem.history.forEach(v => { if(v.itens) v.itens.forEach(it => { counts[it.nome] = (counts[it.nome] || 0) + it.qV; }); });
+                const top = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                document.getElementById('ia-top-ranking').innerHTML = top.map(([n, q], i) => `
+                    <div class="flex items-center justify-between border-b border-zinc-900/50 pb-2">
+                        <span class="text-[9px] text-zinc-500 font-black">#${i+1} ${n}</span>
+                        <span class="text-[9px] text-white font-black">${q} UN</span>
+                    </div>`).join('') || "SEM VENDAS";
+            },
+            generateShoppingList() {
+                const low = inventory.db.filter(p => p.qtd <= 3);
+                document.getElementById('ia-shopping-list').innerHTML = low.map(p => `
+                    <div class="flex justify-between items-center p-3 bg-red-950/10 border border-red-900/30 rounded-xl">
+                        <span>${p.nome}</span><span class="text-red-500">${p.qtd} UN</span>
+                    </div>`).join('') || '<p class="text-zinc-600">ESTOQUE OK</p>';
+            },
+            renderHourChart() {
+                const hours = new Array(24).fill(0);
+                vendaSystem.history.forEach(v => { if(v.horaPura !== undefined) hours[v.horaPura]++; });
+                const max = Math.max(...hours) || 1;
+                document.getElementById('ia-hour-chart').innerHTML = hours.map((v, h) => `
+                    <div class="flex-1 bg-zinc-900 hover:bg-[#d4af37] transition-all rounded-t-sm relative group" style="height: ${(v/max)*100}%">
+                    </div>`).join('');
+            }
+        };
+
+        const ui = {
+            mainTab(t) {
+                ['inventory', 'pedidos', 'historico', 'devendo', 'ia'].forEach(s => {
+                    const sec = document.getElementById(`section-${s === 'estoque' ? 'inventory' : s}`);
+                    if(sec) sec.classList.add('hidden');
+                    const btn = document.getElementById(`btn-${s === 'estoque' ? 'estoque' : s}`);
+                    if(btn) btn.classList.remove('active');
+                });
+                const target = document.getElementById(`section-${t === 'estoque' ? 'inventory' : t}`);
+                if(target) target.classList.remove('hidden');
+                const targetBtn = document.getElementById(`btn-${t}`);
+                if(targetBtn) targetBtn.classList.add('active');
+            },
+            openProductModal() { document.getElementById('product-modal').classList.remove('hidden'); },
+            closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); document.getElementById('edit-id').value = ""; },
+            showReceipt(v) {
+                document.getElementById('rec-total').innerText = `R$ ${v.total.toFixed(2)}`;
+                document.getElementById('rec-metodo').innerText = v.metodo;
+                document.getElementById('rec-tipo').innerText = v.tipo;
+                document.getElementById('rec-list').innerHTML = v.itens.map(i => `<div class="flex justify-between text-[10px]"><span>${i.qV}x ${i.nome}</span><span>R$ ${(i.preco * i.qV).toFixed(2)}</span></div>`).join('');
+                document.getElementById('receipt-modal').classList.remove('hidden');
+            },
+            closeReceipt() { document.getElementById('receipt-modal').classList.add('hidden'); },
+            printReceipt() { window.print(); },
+            toggleBlackOps() { document.body.classList.toggle('black-ops'); },
+            renderHistory() {
+                const grupos = {};
+                vendaSystem.history.forEach(v => {
+                    const d = v.dataSimples || "Antigo";
+                    if(!grupos[d]) grupos[d] = { v: [], t: 0 };
+                    grupos[d].v.push(v); grupos[d].t += v.total;
+                });
+                const html = Object.keys(grupos).map(data => `
+                    <div class="day-group-box">
+                        <div class="day-header"><span class="text-xs font-black text-zinc-400">${data}</span><span class="day-total-label">R$ ${grupos[data].t.toFixed(2)}</span></div>
+                        <div class="space-y-3">
+                            ${grupos[data].v.map(v => `
+                                <div class="sale-card bg-black/40 p-4 rounded-xl flex justify-between border border-zinc-900/50" onclick="vendaSystem.handleVendaClick('${v.id}')">
+                                    <div><p class="text-[8px] text-zinc-600">${v.hora} | ${v.metodo}</p><p class="text-[10px] font-bold">${v.obs}</p></div>
+                                    <span class="font-black">R$ ${v.total.toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`).join('');
+                document.getElementById('pedidos-grouped-container').innerHTML = html;
+                document.getElementById('gavetas-grouped-container').innerHTML = html;
+            },
+            closeEditVenda() { document.getElementById('edit-venda-modal').classList.add('hidden'); }
+        };
+    </script>
+</body>
+</html>
