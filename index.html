@@ -316,16 +316,25 @@
 
     <div id="edit-venda-modal" class="fixed inset-0 hidden z-[500] bg-black/95 flex items-center justify-center p-6">
         <div class="bg-zinc-950 border border-zinc-900 w-full max-w-lg rounded-[3rem] p-10">
-            <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase text-center">Editar Registro</h3>
+            <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase text-center">Opções do Pedido</h3>
             <input type="hidden" id="edit-venda-id">
-            <div class="space-y-4">
-                <input type="text" id="edit-venda-obs" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none uppercase text-xs">
-                <input type="number" id="edit-venda-total" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none text-xs">
+            
+            <div class="space-y-4 mb-8">
+                <div class="p-4 bg-zinc-900/50 rounded-2xl border border-zinc-800">
+                    <p class="text-[9px] text-zinc-500 uppercase mb-2">Editar Identificação</p>
+                    <input type="text" id="edit-venda-obs" class="w-full bg-black border border-zinc-900 p-4 rounded-xl outline-none uppercase text-xs">
+                </div>
+                <div class="p-4 bg-zinc-900/50 rounded-2xl border border-zinc-800">
+                    <p class="text-[9px] text-zinc-500 uppercase mb-2">Editar Valor Total</p>
+                    <input type="number" id="edit-venda-total" class="w-full bg-black border border-zinc-900 p-4 rounded-xl outline-none text-xs">
+                </div>
             </div>
-            <div class="flex gap-4 mt-10">
-                <button onclick="vendaSystem.deletarVenda(document.getElementById('edit-venda-id').value)" class="flex-1 text-red-600 font-black uppercase text-[10px]">Excluir Registro</button>
-                <button onclick="vendaSystem.salvarEdicaoVenda()" class="flex-2 bg-white text-black font-black p-4 rounded-xl uppercase text-[10px]">Salvar</button>
-                <button onclick="ui.closeEditVenda()" class="flex-1 text-zinc-500 font-black uppercase text-[10px]">Sair</button>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="vendaSystem.excluirComEstorno(true)" class="bg-green-950/20 border border-green-900 text-green-500 p-4 rounded-xl font-black uppercase text-[8px] leading-tight">Excluir e <br>Devolver ao Estoque</button>
+                <button onclick="vendaSystem.excluirComEstorno(false)" class="bg-red-950/20 border border-red-900 text-red-500 p-4 rounded-xl font-black uppercase text-[8px] leading-tight">Excluir sem <br>Devolver</button>
+                <button onclick="vendaSystem.salvarEdicaoVenda()" class="col-span-2 bg-white text-black p-4 rounded-xl font-black uppercase text-[10px]">Salvar Alterações</button>
+                <button onclick="ui.closeEditVenda()" class="col-span-2 text-zinc-600 p-2 font-black uppercase text-[9px]">Cancelar</button>
             </div>
         </div>
     </div>
@@ -598,8 +607,37 @@
                 });
                 ui.closeEditVenda();
             },
-            async deletarVenda(id) {
-                if(confirm("EXCLUIR ESTA VENDA?")) { await db.collection("vendas").doc(id).delete(); ui.closeEditVenda(); }
+            async excluirComEstorno(deveEstornar) {
+                const id = document.getElementById('edit-venda-id').value;
+                const venda = this.history.find(v => v.id === id);
+                
+                if (!venda) return;
+
+                if (confirm(`DESEJA REALMENTE EXCLUIR ESTE PEDIDO${deveEstornar ? ' E DEVOLVER OS ITENS AO ESTOQUE' : ''}?`)) {
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    try {
+                        if (deveEstornar && venda.itens) {
+                            const batch = db.batch();
+                            venda.itens.forEach(item => {
+                                if (item.id) {
+                                    batch.update(db.collection("produtos").doc(item.id), {
+                                        qtd: firebase.firestore.FieldValue.increment(item.qV)
+                                    });
+                                }
+                            });
+                            await batch.commit();
+                        }
+                        
+                        await db.collection("vendas").doc(id).delete();
+                        ui.closeEditVenda();
+                    } catch (err) {
+                        console.error("Erro ao excluir:", err);
+                        alert("Erro ao processar exclusão.");
+                    } finally {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                    }
+                }
             }
         };
 
