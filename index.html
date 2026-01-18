@@ -9,11 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <style>
-        /* CSS ORIGINAL */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;900&display=swap');
 
         :root { --gold: #d4af37; --bg-black: #050505; }
-        body { background-color: var(--bg-black); color: #fff; font-family: 'Inter', sans-serif; transition: background 0.5s ease; }
+        body { background-color: var(--bg-black); color: #fff; font-family: 'Inter', sans-serif; transition: background 0.5s ease; overflow-x: hidden; }
         .font-luxury { font-family: 'Cinzel', serif; }
         .gold-gradient { background: linear-gradient(to right, #d4af37, #f9e29c, #b8860b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
@@ -44,7 +43,6 @@
         .btn-manage { font-size: 10px; font-weight: 900; padding: 10px 20px; border-radius: 12px; border: 1px solid #333; text-transform: uppercase; }
         .btn-new-item { background: white; color: black; font-size: 10px; font-weight: 900; padding: 10px 20px; border-radius: 12px; text-transform: uppercase; }
 
-        /* IN-HTML STYLES */
         #splash-screen { background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); perspective: 1000px; }
         .reactor-glow { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%); filter: blur(60px); animation: pulseGlow 4s infinite ease-in-out; }
         @keyframes pulseGlow { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.2); opacity: 0.6; } }
@@ -52,8 +50,8 @@
         .progress-container { width: 300px; height: 1px; background: rgba(212, 175, 55, 0.1); position: relative; overflow: hidden; }
         .system-bar { width: 0%; height: 100%; background: #d4af37; box-shadow: 0 0 15px #d4af37; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
         .uau-exit { transform: scale(2) rotateX(20deg); filter: brightness(5) blur(100px); opacity: 0; transition: all 2s cubic-bezier(0.8, 0, 0.2, 1); }
-        .hidden-init { opacity: 0; filter: blur(30px); transform: scale(0.95) translateY(30px); }
-        .visible-init { opacity: 1; filter: blur(0); transform: scale(1) translateY(0); transition: all 2.5s cubic-bezier(0.075, 0.82, 0.165, 1); }
+        .hidden-init { opacity: 0; filter: blur(30px); transform: scale(0.95) translateY(30px); pointer-events: none; }
+        .visible-init { opacity: 1; filter: blur(0); transform: scale(1) translateY(0); transition: all 2.5s cubic-bezier(0.075, 0.82, 0.165, 1); pointer-events: auto; }
         .char { display: inline-block; opacity: 0; transform: translateZ(-100px); animation: charIn 1.2s cubic-bezier(0.5, 0, 0.5, 1) forwards; }
         @keyframes charIn { to { opacity: 1; transform: translateZ(0); } }
         .critical-stock { border: 1px solid #ef4444 !important; animation: pulseAlert 2s infinite; }
@@ -64,7 +62,6 @@
         .loader-circle { width: 40px; height: 40px; border: 3px solid #111; border-top-color: #d4af37; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* IA CHAT STYLES */
         .ia-bubble { padding: 12px 16px; border-radius: 1.2rem; margin-bottom: 8px; font-size: 11px; line-height: 1.5; max-width: 80%; position: relative; }
         .ia-bubble.jarvis { background: #111; border: 1px solid #222; border-left: 3px solid #d4af37; color: #eee; align-self: flex-start; }
         .ia-bubble.user { background: #d4af37; color: #000; font-weight: 700; align-self: flex-end; margin-left: auto; border-radius: 1.2rem 1.2rem 0 1.2rem; }
@@ -80,11 +77,11 @@
         .goal-bar-fill { height: 100%; background: #d4af37; width: 0%; transition: width 1s ease; }
     </style>
 </head>
-<body class="flex flex-col lg:flex-row min-h-screen bg-[#050505] text-white overflow-x-hidden">
+<body class="flex flex-col lg:flex-row min-h-screen bg-[#050505] text-white">
 
     <div id="loading-overlay" class="flex flex-col items-center justify-center">
         <div class="loader-circle mb-4"></div>
-        <p class="text-[10px] font-black tracking-widest text-zinc-500 uppercase">Processando...</p>
+        <p class="text-[10px] font-black tracking-widest text-zinc-500 uppercase">Aguarde, Senhor...</p>
     </div>
 
     <div id="splash-screen" class="fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden">
@@ -131,7 +128,7 @@
         </header>
 
         <div id="section-inventory">
-            <div class="mb-10"><input type="text" id="search-bar" oninput="inventory.search(this.value)" placeholder="BUSCAR PRODUTO..." class="search-input"></div>
+            <div class="mb-10"><input type="text" id="search-bar" oninput="inventory.search(this.value)" placeholder="BUSCAR PRODUTO NO SISTEMA..." class="search-input"></div>
             <div id="category-tabs" class="flex gap-4 overflow-x-auto pb-6 no-scrollbar mb-10">
                 <button onclick="inventory.filter('TUDO')" class="tab-btn active">TUDO</button>
                 <button onclick="inventory.filter('refrigerantes')" class="tab-btn">REFRIGERANTES</button>
@@ -153,20 +150,20 @@
         <div id="section-historico" class="hidden">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
                 <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
-                    <p class="text-[9px] text-zinc-500 font-black uppercase mb-2">Faturamento</p>
+                    <p class="text-[9px] text-zinc-500 font-black uppercase mb-2">Faturamento Bruto</p>
                     <h2 id="dash-faturamento" class="text-2xl font-black text-white">R$ 0,00</h2>
                 </div>
                 <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
-                    <p class="text-[9px] text-zinc-500 font-black uppercase mb-2">Lucro Bruto</p>
+                    <p class="text-[9px] text-zinc-500 font-black uppercase mb-2">Lucro Líquido</p>
                     <h2 id="dash-lucro" class="text-2xl font-black text-green-500">R$ 0,00</h2>
                 </div>
                 <div class="bg-zinc-950 p-6 rounded-[2rem] border border-zinc-900">
-                    <p class="text-[9px] text-red-500 font-black uppercase mb-2">Perdas/Avarias</p>
+                    <p class="text-[9px] text-red-500 font-black uppercase mb-2">Total de Perdas</p>
                     <h2 id="dash-perdas" class="text-2xl font-black text-red-600">R$ 0,00</h2>
                 </div>
                 <div class="grid grid-cols-1 gap-2">
-                    <button onclick="financeiro.abrirModalDespesa()" class="bg-red-950/20 border border-red-900/40 p-3 rounded-[1rem] text-red-500 text-[8px] font-black uppercase">Sangria</button>
-                    <button onclick="financeiro.downloadSnapshot()" class="bg-zinc-900 border border-zinc-800 p-3 rounded-[1rem] text-zinc-400 text-[8px] font-black uppercase">Backup</button>
+                    <button onclick="financeiro.abrirModalDespesa()" class="bg-red-950/20 border border-red-900/40 p-3 rounded-[1rem] text-red-500 text-[8px] font-black uppercase">Registrar Sangria</button>
+                    <button onclick="financeiro.downloadSnapshot()" class="bg-zinc-900 border border-zinc-800 p-3 rounded-[1rem] text-zinc-400 text-[8px] font-black uppercase">Fazer Backup</button>
                 </div>
             </div>
             <div id="gavetas-grouped-container" class="max-w-4xl space-y-8"></div>
@@ -174,7 +171,7 @@
 
         <div id="section-devendo" class="hidden">
             <div class="max-w-xl bg-zinc-950 border border-zinc-900 rounded-[3rem] p-10 mb-12">
-                <h3 class="text-xl font-luxury text-red-600 mb-6 uppercase">Novo Devedor</h3>
+                <h3 class="text-xl font-luxury text-red-600 mb-6 uppercase">Registro de Devedor</h3>
                 <div class="grid grid-cols-2 gap-4">
                     <input type="text" id="dev-nome" placeholder="NOME DO CLIENTE" class="col-span-2 bg-black border border-zinc-900 p-4 rounded-2xl outline-none">
                     <input type="number" id="dev-valor" placeholder="VALOR R$" class="bg-black border border-zinc-900 p-4 rounded-2xl outline-none">
@@ -190,37 +187,37 @@
                     <div class="bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900">
                         <div class="flex items-center gap-3 mb-6">
                             <div class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
-                            <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Lista de Reposição (IA)</h4>
+                            <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Lista de Reposição Crítica</h4>
                         </div>
                         <div id="ia-shopping-list" class="space-y-3 text-[10px] text-zinc-100 font-bold uppercase"></div>
                     </div>
                     <div class="bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900">
-                        <h4 class="text-[10px] font-black uppercase text-[#d4af37] mb-6 tracking-widest">Mais Vendidos</h4>
+                        <h4 class="text-[10px] font-black uppercase text-[#d4af37] mb-6 tracking-widest">Top 5 Produtos</h4>
                         <div id="ia-top-ranking" class="space-y-4"></div>
                     </div>
                 </div>
                 <div class="xl:col-span-2 space-y-8">
                     <div class="bg-zinc-950 p-8 rounded-[2.5rem] border border-zinc-900">
                         <div class="flex justify-between items-center mb-8">
-                            <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Intensidade de Movimento (24h)</h4>
-                            <span class="text-[8px] text-zinc-600 font-bold uppercase">Baseado em Vendas Reais</span>
+                            <h4 class="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Pico de Atividade (24h)</h4>
+                            <span class="text-[8px] text-zinc-600 font-bold uppercase">Monitoramento em Tempo Real</span>
                         </div>
                         <div id="ia-hour-chart" class="flex items-end gap-1.5 h-32 px-2"></div>
                         <div class="flex justify-between mt-4 px-2 text-[8px] text-zinc-700 font-black">
-                            <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span>
+                            <span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>23h</span>
                         </div>
                     </div>
                     <div class="flex flex-col h-[500px] bg-zinc-950 rounded-[2.5rem] border border-zinc-900 overflow-hidden">
                         <div class="p-6 border-b border-zinc-900 bg-black/40 flex justify-between items-center">
-                            <h3 class="text-xs font-black gold-gradient uppercase tracking-widest">Terminal de Comando JARVIS</h3>
-                            <span class="text-[8px] bg-zinc-900 px-3 py-1 rounded-full text-zinc-500 font-black">ONLINE</span>
+                            <h3 class="text-xs font-black gold-gradient uppercase tracking-widest">Interface JARVIS Terminal</h3>
+                            <span class="text-[8px] bg-zinc-900 px-3 py-1 rounded-full text-green-500 font-black">SISTEMA ATIVO</span>
                         </div>
                         <div id="ia-chat-box" class="flex-1 overflow-y-auto p-8 flex flex-col no-scrollbar space-y-4">
-                            <div class="ia-bubble jarvis">Senhor, estou analisando os dados da Adega. Pergunte-me sobre metas, perdas ou estoque.</div>
+                            <div class="ia-bubble jarvis">Protocolo de análise carregado. Como posso auxiliar na gestão da Adega hoje?</div>
                         </div>
                         <div class="p-6 bg-black/40 flex gap-3 border-t border-zinc-900">
-                            <input type="text" id="ia-input" placeholder="Comando de voz ou texto..." class="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 text-xs outline-none focus:border-[#d4af37] transition-all">
-                            <button onclick="jarvisIA.perguntar()" class="bg-[#d4af37] text-black font-black px-8 rounded-2xl text-[10px] uppercase hover:scale-105 active:scale-95 transition-all">Enviar</button>
+                            <input type="text" id="ia-input" placeholder="Digite seu comando..." class="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 text-xs outline-none focus:border-[#d4af37] transition-all">
+                            <button onclick="jarvisIA.perguntar()" class="bg-[#d4af37] text-black font-black px-8 rounded-2xl text-[10px] uppercase hover:scale-105 active:scale-95 transition-all">Executar</button>
                         </div>
                     </div>
                 </div>
@@ -229,12 +226,12 @@
     </main>
 
     <aside id="app-aside" class="w-full lg:w-[480px] bg-black border-l border-zinc-900 flex flex-col p-12 sticky top-0 h-screen hidden-init">
-        <h2 class="text-3xl font-luxury mb-10">Checkout</h2>
+        <h2 class="text-3xl font-luxury mb-10">Carrinho</h2>
         <div id="cart-items" class="flex-1 overflow-y-auto space-y-6 no-scrollbar"></div>
         <div class="mt-8 border-t border-zinc-900 pt-8">
-            <div class="flex gap-4 mb-6">
-                <button onclick="logistica.setOrderType('Balcão')" class="flex-1 py-3 rounded-xl border border-zinc-900 text-[9px] font-black uppercase active-type" id="type-Balcão">Balcão</button>
-                <button onclick="logistica.setOrderType('Entrega')" class="flex-1 py-3 rounded-xl border border-zinc-900 text-[9px] font-black uppercase" id="type-Entrega">Entrega</button>
+            <div class="gap-4 grid grid-cols-2 mb-6">
+                <button onclick="logistica.setOrderType('Balcão')" class="py-3 rounded-xl border border-zinc-900 text-[9px] font-black uppercase active-type" id="type-Balcão">Balcão</button>
+                <button onclick="logistica.setOrderType('Entrega')" class="py-3 rounded-xl border border-zinc-900 text-[9px] font-black uppercase" id="type-Entrega">Entrega</button>
             </div>
             <div id="delivery-details" class="hidden mb-6 p-4 bg-zinc-950 rounded-2xl border border-zinc-900">
                 <input type="number" id="delivery-fee" oninput="vendaSystem.renderCart()" placeholder="TAXA DE ENTREGA R$" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-[10px] outline-none">
@@ -246,16 +243,16 @@
                 <button onclick="vendaSystem.setPay('Fiado')" class="pay-btn" id="pay-Fiado">FIADO</button>
             </div>
             <div id="money-input-area" class="hidden mb-6 p-4 bg-zinc-950 rounded-2xl border border-zinc-900">
-                <input type="number" id="money-received" oninput="vendaSystem.calcTroco()" placeholder="VALOR RECEBIDO R$" class="w-full bg-black border border-zinc-900 p-4 rounded-xl text-xs mb-3">
-                <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-500 uppercase">Troco:</span><span id="money-change" class="text-xl font-black text-green-500">R$ 0,00</span></div>
+                <input type="number" id="money-received" oninput="vendaSystem.calcTroco()" placeholder="VALOR RECEBIDO" class="w-full bg-black border border-zinc-900 p-4 rounded-xl text-xs mb-3">
+                <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-500 uppercase">Troco Devido:</span><span id="money-change" class="text-xl font-black text-green-500">R$ 0,00</span></div>
             </div>
             <div id="card-options" class="hidden grid grid-cols-2 gap-3 mb-6">
-                <button onclick="vendaSystem.setCardType('Crédito')" class="pay-btn text-[8px]" id="card-Crédito">CRÉDITO (5%)</button>
-                <button onclick="vendaSystem.setCardType('Débito')" class="pay-btn text-[8px]" id="card-Débito">DÉBITO (3%)</button>
+                <button onclick="vendaSystem.setCardType('Crédito')" class="pay-btn text-[8px]" id="card-Crédito">CRÉDITO (+5%)</button>
+                <button onclick="vendaSystem.setCardType('Débito')" class="pay-btn text-[8px]" id="card-Débito">DÉBITO (+3%)</button>
             </div>
-            <input type="text" id="venda-obs" placeholder="CLIENTE / OBS" class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 text-xs outline-none mb-6">
+            <input type="text" id="venda-obs" placeholder="NOME DO CLIENTE / OBSERVAÇÃO" class="w-full bg-zinc-950 border border-zinc-900 rounded-2xl p-4 text-xs outline-none mb-6">
             <div class="flex justify-between items-center mb-8">
-                <span class="text-zinc-500 font-bold text-[10px] uppercase">Total Geral</span>
+                <span class="text-zinc-500 font-bold text-[10px] uppercase">Valor Total</span>
                 <span id="cart-total" class="text-5xl font-black text-white">R$ 0,00</span>
             </div>
             <button onclick="vendaSystem.finalizar()" class="btn-finish-sale">Finalizar Venda (Espaço)</button>
@@ -265,7 +262,7 @@
     <div id="receipt-modal" class="fixed inset-0 hidden z-[300] bg-black/95 flex items-center justify-center p-6">
         <div class="uau-receipt w-full max-w-md rounded-[3rem] p-10 text-center">
             <div id="printable-area">
-                <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase">Recibo Corujão</h3>
+                <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase">Recibo Oficial</h3>
                 <div id="rec-list" class="space-y-4 mb-8 text-left border-y border-zinc-900 py-8"></div>
                 <div class="flex justify-between items-end mb-8">
                     <div class="text-left">
@@ -285,15 +282,15 @@
     <div id="product-modal" class="fixed inset-0 hidden z-[400] bg-black/98 flex items-center justify-center p-6">
         <div class="bg-zinc-950 border border-zinc-900 w-full max-w-xl rounded-[3rem] p-10">
             <div class="flex justify-between items-center mb-8">
-                <h3 class="text-2xl font-luxury gold-gradient uppercase">Gerenciar Item</h3>
+                <h3 class="text-2xl font-luxury gold-gradient uppercase">Gerenciar Produto</h3>
                 <div class="flex gap-4">
-                    <button onclick="inventory.registrarPerda()" class="text-orange-500 font-black text-[8px] uppercase">Registrar Avaria</button>
-                    <button id="btn-delete-prod" onclick="inventory.deleteProduct()" class="hidden text-red-600 font-black text-[8px] uppercase">Excluir</button>
+                    <button onclick="inventory.registrarPerda()" class="text-orange-500 font-black text-[8px] uppercase">Avaria/Perda</button>
+                    <button id="btn-delete-prod" onclick="inventory.deleteProduct()" class="hidden text-red-600 font-black text-[8px] uppercase">Deletar</button>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-5">
                 <input type="hidden" id="edit-id">
-                <input type="text" id="p-nome" placeholder="NOME" class="col-span-2 bg-black border border-zinc-900 p-5 rounded-2xl outline-none uppercase">
+                <input type="text" id="p-nome" placeholder="NOME DO PRODUTO" class="col-span-2 bg-black border border-zinc-900 p-5 rounded-2xl outline-none uppercase">
                 <select id="p-cat" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
                     <option value="refrigerantes">Refrigerantes</option>
                     <option value="Cervejas">Cervejas</option>
@@ -304,37 +301,36 @@
                     <option value="cerveja lata">Cerveja Lata</option>
                     <option value="kit">Kits</option>
                 </select>
-                <input type="number" id="p-qtd" placeholder="ESTOQUE" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
-                <input type="number" id="p-custo" placeholder="CUSTO R$" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
-                <input type="number" id="p-venda" placeholder="VENDA R$" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
-                <div class="col-span-2"><p class="text-[8px] text-zinc-500 mb-2 uppercase">Validade</p><input type="date" id="p-validade" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none text-white"></div>
-                <input type="text" id="p-img" placeholder="IMAGEM URL" class="col-span-2 bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <input type="number" id="p-qtd" placeholder="QUANTIDADE" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <input type="number" id="p-custo" placeholder="PREÇO CUSTO" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <input type="number" id="p-venda" placeholder="PREÇO VENDA" class="bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
+                <div class="col-span-2"><p class="text-[8px] text-zinc-500 mb-2 uppercase">Data de Validade</p><input type="date" id="p-validade" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none text-white"></div>
+                <input type="text" id="p-img" placeholder="URL DA IMAGEM" class="col-span-2 bg-black border border-zinc-900 p-5 rounded-2xl outline-none">
             </div>
             <div class="flex gap-6 mt-10">
                 <button onclick="ui.closeProductModal()" class="flex-1 text-zinc-500 font-black uppercase text-xs">Cancelar</button>
-                <button onclick="inventory.saveProduct()" class="flex-2 bg-white text-black font-black p-5 rounded-2xl uppercase text-xs">Salvar</button>
+                <button onclick="inventory.saveProduct()" class="flex-2 bg-white text-black font-black p-5 rounded-2xl uppercase text-xs">Confirmar Cadastro</button>
             </div>
         </div>
     </div>
 
     <div id="edit-venda-modal" class="fixed inset-0 hidden z-[500] bg-black/95 flex items-center justify-center p-6">
         <div class="bg-zinc-950 border border-zinc-900 w-full max-w-lg rounded-[3rem] p-10">
-            <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase text-center">Ajustar Registro</h3>
+            <h3 class="text-2xl font-luxury gold-gradient mb-8 uppercase text-center">Editar Registro</h3>
             <input type="hidden" id="edit-venda-id">
             <div class="space-y-4">
                 <input type="text" id="edit-venda-obs" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none uppercase text-xs">
                 <input type="number" id="edit-venda-total" class="w-full bg-black border border-zinc-900 p-5 rounded-2xl outline-none text-xs">
             </div>
             <div class="flex gap-4 mt-10">
-                <button onclick="vendaSystem.deletarVenda(document.getElementById('edit-venda-id').value)" class="flex-1 text-red-600 font-black uppercase text-[10px]">Excluir</button>
+                <button onclick="vendaSystem.deletarVenda(document.getElementById('edit-venda-id').value)" class="flex-1 text-red-600 font-black uppercase text-[10px]">Excluir Registro</button>
                 <button onclick="vendaSystem.salvarEdicaoVenda()" class="flex-2 bg-white text-black font-black p-4 rounded-xl uppercase text-[10px]">Salvar</button>
-                <button onclick="ui.closeEditVenda()" class="flex-1 text-zinc-500 font-black uppercase text-[10px]">Voltar</button>
+                <button onclick="ui.closeEditVenda()" class="flex-1 text-zinc-500 font-black uppercase text-[10px]">Sair</button>
             </div>
         </div>
     </div>
 
     <script>
-        /* JS ORIGINAL */
         const firebaseConfig = {
             apiKey: "AIzaSyA_AFJL8gwdcidtisa8hoN7l6imJynCGFc",
             authDomain: "adega-corujao.firebaseapp.com",
@@ -375,7 +371,7 @@
             setTimeout(() => {
                 splash.classList.add('uau-exit');
                 setTimeout(() => {
-                    splash.style.visibility = 'hidden';
+                    splash.style.display = 'none';
                     document.getElementById('app-content').classList.replace('hidden-init', 'visible-init');
                     document.getElementById('app-aside').classList.replace('hidden-init', 'visible-init');
                     inventory.init(); vendaSystem.init(); devedoresSystem.init();
@@ -383,7 +379,6 @@
             }, 8000);
         });
 
-        // EVENTOS DE TECLADO
         window.addEventListener('keydown', (e) => {
             if (e.key === 'F4') { e.preventDefault(); ui.openProductModal(); }
             if (e.key === 'Escape') { ui.closeProductModal(); ui.closeReceipt(); ui.closeEditVenda(); }
@@ -447,14 +442,14 @@
             async registrarPerda() {
                 const id = document.getElementById('edit-id').value;
                 const p = this.db.find(x => x.id === id);
-                const qtdPerda = prompt(`QUANTAS UNIDADES DE ${p.nome} FORAM PERDIDAS?`);
+                const qtdPerda = prompt(`QUANTIDADE DE PERDA PARA ${p.nome}:`);
                 if(qtdPerda) {
                     const custoTotalPerda = p.custo * parseInt(qtdPerda);
                     await db.collection("produtos").doc(id).update({ qtd: firebase.firestore.FieldValue.increment(-parseInt(qtdPerda)) });
                     await db.collection("vendas").add({ 
-                        total: 0, lucro: -custoTotalPerda, obs: `AVARIA: ${qtdPerda}x ${p.nome}`, 
+                        total: 0, lucro: -custoTotalPerda, obs: `PERDA: ${qtdPerda}x ${p.nome}`, 
                         timestamp: Date.now(), dataSimples: new Date().toLocaleDateString('pt-BR'), 
-                        metodo: "Perda", tipo: "Saída", perda: true 
+                        metodo: "Avaria", tipo: "Saída", perda: true 
                     });
                     ui.closeProductModal();
                 }
@@ -474,7 +469,7 @@
                 ui.closeProductModal();
             },
             async deleteProduct() {
-                if(confirm("EXCLUIR?")) { await db.collection("produtos").doc(document.getElementById('edit-id').value).delete(); ui.closeProductModal(); }
+                if(confirm("EXCLUIR PERMANENTEMENTE?")) { await db.collection("produtos").doc(document.getElementById('edit-id').value).delete(); ui.closeProductModal(); }
             }
         };
 
@@ -498,9 +493,15 @@
             },
             adicionar(id) {
                 const p = inventory.db.find(x => x.id === id);
-                if(p.qtd <= 0) return;
-                const item = this.carrinho.find(i => i.id === id);
-                if(item) item.qV++; else this.carrinho.push({ ...p, qV: 1 });
+                const itemNoCarrinho = this.carrinho.find(i => i.id === id);
+                const qtdNoCarrinho = itemNoCarrinho ? itemNoCarrinho.qV : 0;
+
+                if(p.qtd <= 0 || (qtdNoCarrinho + 1) > p.qtd) {
+                    alert(`ESTOQUE INSUFICIENTE: ${p.nome}. Disponível: ${p.qtd}`);
+                    return;
+                }
+
+                if(itemNoCarrinho) itemNoCarrinho.qV++; else this.carrinho.push({ ...p, qV: 1 });
                 this.renderCart();
             },
             remover(id) {
@@ -518,7 +519,7 @@
                         <div class="flex-1 text-[10px] uppercase font-black">${i.nome}</div>
                         <div class="flex items-center gap-3">
                             <button onclick="vendaSystem.remover('${i.id}')" class="w-8 h-8 bg-zinc-900 rounded-lg">-</button>
-                            <span>${i.qV}</span>
+                            <span class="font-bold text-xs">${i.qV}</span>
                             <button onclick="vendaSystem.adicionar('${i.id}')" class="w-8 h-8 bg-zinc-900 rounded-lg">+</button>
                         </div>
                     </div>`).join('');
@@ -527,8 +528,17 @@
             },
             async finalizar() {
                 if(this.carrinho.length === 0) return;
+
+                for (let item of this.carrinho) {
+                    const pReal = inventory.db.find(x => x.id === item.id);
+                    if (item.qV > pReal.qtd) {
+                        alert(`ESTOQUE ESGOTADO PARA ${item.nome} DURANTE O CHECKOUT.`);
+                        return;
+                    }
+                }
+
                 document.getElementById('loading-overlay').style.display = 'flex';
-                const obsFinal = (document.getElementById('venda-obs').value || "BALCÃO").toUpperCase();
+                const obsFinal = (document.getElementById('venda-obs').value || "VENDA DIRETA").toUpperCase();
                 const taxa = orderType === 'Entrega' ? (parseFloat(document.getElementById('delivery-fee').value) || 0) : 0;
                 const lucroV = this.carrinho.reduce((a,b) => a + ((b.venda - b.custo) * b.qV), 0);
                 const data = {
@@ -544,14 +554,20 @@
                     hora: new Date().toLocaleTimeString(),
                     horaPura: new Date().getHours()
                 };
+                
                 if (selectedPay === 'Fiado') await devedoresSystem.add(obsFinal, cartTotalValue, data.itens);
+                
                 const batch = db.batch();
                 this.carrinho.forEach(i => batch.update(db.collection("produtos").doc(i.id), { qtd: firebase.firestore.FieldValue.increment(-i.qV) }));
                 await db.collection("vendas").add(data);
                 await batch.commit();
+                
                 document.getElementById('loading-overlay').style.display = 'none';
                 ui.showReceipt(data);
-                this.carrinho = []; document.getElementById('delivery-fee').value = ""; document.getElementById('venda-obs').value = ""; this.renderCart();
+                this.carrinho = []; 
+                document.getElementById('delivery-fee').value = ""; 
+                document.getElementById('venda-obs').value = ""; 
+                this.renderCart();
             },
             setPay(m) { 
                 selectedPay = m;
@@ -583,7 +599,7 @@
                 ui.closeEditVenda();
             },
             async deletarVenda(id) {
-                if(confirm("EXCLUIR?")) { await db.collection("vendas").doc(id).delete(); ui.closeEditVenda(); }
+                if(confirm("EXCLUIR ESTA VENDA?")) { await db.collection("vendas").doc(id).delete(); ui.closeEditVenda(); }
             }
         };
 
@@ -604,9 +620,9 @@
             },
             async handleDevClick(id) {
                 const r = this.registros.find(x => x.id === id);
-                if(editMode && confirm("REMOVER?")) await db.collection("devedores").doc(id).delete();
+                if(editMode && confirm("REMOVER DEVEDOR?")) await db.collection("devedores").doc(id).delete();
                 else {
-                    const p = prompt("ABATER VALOR:");
+                    const p = prompt("VALOR DO PAGAMENTO:");
                     if(p) {
                         const res = r.valor - parseFloat(p);
                         if(res <= 0) await db.collection("devedores").doc(id).delete();
@@ -634,10 +650,10 @@
             downloadSnapshot() {
                 const d = { produtos: inventory.db, vendas: vendaSystem.history, devedores: devedoresSystem.registros };
                 const b = new Blob([JSON.stringify(d)], { type: 'application/json' });
-                const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup.json`; a.click();
+                const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `backup_corujao.json`; a.click();
             },
             async abrirModalDespesa() {
-                const v = prompt("VALOR SANGRIA:"); const m = prompt("MOTIVO:");
+                const v = prompt("VALOR DA SANGRIA:"); const m = prompt("MOTIVO:");
                 if(v && m) await db.collection("vendas").add({ total: -parseFloat(v), lucro: -parseFloat(v), obs: `SANGRIA: ${m.toUpperCase()}`, timestamp: Date.now(), dataSimples: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString(), metodo: "Sangria", tipo: "Saída" });
             }
         };
@@ -647,52 +663,31 @@
                 const input = document.getElementById('ia-input');
                 const msg = input.value.toLowerCase().trim(); 
                 if(!msg) return;
-                
-                const userB = document.createElement('div'); 
-                userB.className = 'ia-bubble user'; 
-                userB.innerText = input.value;
-                document.getElementById('ia-chat-box').appendChild(userB);
-                input.value = "";
-
+                const userB = document.createElement('div'); userB.className = 'ia-bubble user'; userB.innerText = input.value;
+                document.getElementById('ia-chat-box').appendChild(userB); input.value = "";
                 let res = "";
                 const produtoEncontrado = inventory.db.find(p => msg.includes(p.nome.toLowerCase()));
-                
-                if (msg.includes("quanto") && msg.includes("estoque") && produtoEncontrado) {
-                    res = `Senhor, temos ${produtoEncontrado.qtd} unidades de ${produtoEncontrado.nome}.`;
-                } 
-                else if ((msg.includes("preço") || msg.includes("quanto custa")) && produtoEncontrado) {
-                    res = `O ${produtoEncontrado.nome} custa R$ ${produtoEncontrado.venda.toFixed(2)}.`;
-                }
-                else if (msg.includes("mais caro")) {
-                    const caro = [...inventory.db].sort((a,b) => b.venda - a.venda)[0];
-                    res = `O item mais caro é ${caro.nome} (R$ ${caro.venda.toFixed(2)}).`;
-                }
-                else if (msg.includes("vendas") || msg.includes("vendi")) {
+                if (msg.includes("quanto") && msg.includes("estoque") && produtoEncontrado) res = `Análise concluída: Restam ${produtoEncontrado.qtd} unidades de ${produtoEncontrado.nome} em estoque.`;
+                else if (msg.includes("preço") && produtoEncontrado) res = `O valor unitário de ${produtoEncontrado.nome} é R$ ${produtoEncontrado.venda.toFixed(2)}.`;
+                else if (msg.includes("vendas") || msg.includes("faturou")) {
                     const hoje = new Date().toLocaleDateString('pt-BR');
                     const vdsHoje = vendaSystem.history.filter(v => v.dataSimples === hoje);
                     const totalH = vdsHoje.reduce((a,b) => a + (b.total || 0), 0);
-                    res = `Hoje faturamos R$ ${totalH.toFixed(2)} em ${vdsHoje.length} vendas.`;
+                    res = `Faturamento de hoje: R$ ${totalH.toFixed(2)} acumulados em ${vdsHoje.length} operações.`;
                 }
-                else if (msg.includes("lucro")) {
-                    const luc = document.getElementById('dash-lucro').innerText;
-                    res = `O lucro total registrado é de ${luc}.`;
-                }
-                else if (msg.includes("quem deve") || msg.includes("devedor")) {
+                else if (msg.includes("lucro")) res = `O lucro líquido acumulado é de ${document.getElementById('dash-lucro').innerText}.`;
+                else if (msg.includes("devedor") || msg.includes("deve")) {
                     const totalD = devedoresSystem.registros.reduce((a,b) => a + b.valor, 0);
-                    res = `Temos R$ ${totalD.toFixed(2)} pendentes com devedores.`;
+                    res = `Atualmente temos R$ ${totalD.toFixed(2)} em haver com clientes.`;
                 }
                 else if (msg.includes("repor") || msg.includes("acabando")) {
                     const baixos = inventory.db.filter(p => p.qtd <= 3).map(p => p.nome).join(", ");
-                    res = baixos ? `Precisa repor: ${baixos}.` : "Estoque estável, Senhor.";
+                    res = baixos ? `Senhor, recomendo repor: ${baixos}.` : "Estoque dentro dos parâmetros ideais.";
                 }
-                else {
-                    res = "Não entendi o comando. Pergunte sobre estoque, vendas de hoje ou lucro.";
-                }
-
+                else res = "Comando não reconhecido. Posso informar sobre estoque, lucro, faturamento ou devedores.";
+                
                 setTimeout(() => {
-                    const jarvisB = document.createElement('div'); 
-                    jarvisB.className = 'ia-bubble jarvis'; 
-                    jarvisB.innerText = res;
+                    const jarvisB = document.createElement('div'); jarvisB.className = 'ia-bubble jarvis'; jarvisB.innerText = res;
                     document.getElementById('ia-chat-box').appendChild(jarvisB);
                     document.getElementById('ia-chat-box').scrollTop = document.getElementById('ia-chat-box').scrollHeight;
                 }, 500);
@@ -705,14 +700,14 @@
                     <div class="flex items-center justify-between border-b border-zinc-900/50 pb-2">
                         <span class="text-[9px] text-zinc-500 font-black">#${i+1} ${n}</span>
                         <span class="text-[9px] text-white font-black">${q} UN</span>
-                    </div>`).join('') || "SEM VENDAS";
+                    </div>`).join('') || "PROCESSANDO DADOS...";
             },
             generateShoppingList() {
                 const low = inventory.db.filter(p => p.qtd <= 3);
                 document.getElementById('ia-shopping-list').innerHTML = low.map(p => `
                     <div class="flex justify-between items-center p-3 bg-red-950/10 border border-red-900/30 rounded-xl">
                         <span>${p.nome}</span><span class="text-red-500">${p.qtd} UN</span>
-                    </div>`).join('') || '<p class="text-zinc-600">ESTOQUE OK</p>';
+                    </div>`).join('') || '<p class="text-zinc-600">SEM PENDÊNCIAS</p>';
             },
             renderHourChart() {
                 const hours = new Array(24).fill(0);
@@ -738,7 +733,7 @@
                 if(targetBtn) targetBtn.classList.add('active');
             },
             openProductModal() { document.getElementById('product-modal').classList.remove('hidden'); },
-            closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); document.getElementById('edit-id').value = ""; },
+            closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); document.getElementById('edit-id').value = ""; document.getElementById('btn-delete-prod').classList.add('hidden'); },
             showReceipt(v) {
                 document.getElementById('rec-total').innerText = `R$ ${v.total.toFixed(2)}`;
                 document.getElementById('rec-metodo').innerText = v.metodo;
@@ -752,7 +747,7 @@
             renderHistory() {
                 const grupos = {};
                 vendaSystem.history.forEach(v => {
-                    const d = v.dataSimples || "Antigo";
+                    const d = v.dataSimples || "Sem Data";
                     if(!grupos[d]) grupos[d] = { v: [], t: 0 };
                     grupos[d].v.push(v); grupos[d].t += v.total;
                 });
@@ -761,9 +756,9 @@
                         <div class="day-header"><span class="text-xs font-black text-zinc-400">${data}</span><span class="day-total-label">R$ ${grupos[data].t.toFixed(2)}</span></div>
                         <div class="space-y-3">
                             ${grupos[data].v.map(v => `
-                                <div class="sale-card bg-black/40 p-4 rounded-xl flex justify-between border border-zinc-900/50" onclick="vendaSystem.handleVendaClick('${v.id}')">
-                                    <div><p class="text-[8px] text-zinc-600">${v.hora} | ${v.metodo}</p><p class="text-[10px] font-bold">${v.obs}</p></div>
-                                    <span class="font-black">R$ ${v.total.toFixed(2)}</span>
+                                <div class="sale-card bg-black/40 p-4 rounded-xl flex justify-between border border-zinc-900/50 hover:border-[#d4af37]/40 transition-all" onclick="vendaSystem.handleVendaClick('${v.id}')">
+                                    <div><p class="text-[8px] text-zinc-600">${v.hora} | ${v.metodo}</p><p class="text-[10px] font-bold uppercase">${v.obs}</p></div>
+                                    <span class="font-black ${v.total < 0 ? 'text-red-500' : ''}">R$ ${v.total.toFixed(2)}</span>
                                 </div>
                             `).join('')}
                         </div>
